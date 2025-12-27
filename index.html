@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workplace Barcode Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border-left: 4px solid #c33;
+        }
+
+        .success {
+            background: #efe;
+            color: #3c3;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border-left: 4px solid #3c3;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #barcode-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        #barcode {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .barcode-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .barcode-info p {
+            margin: 10px 0;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .barcode-info strong {
+            color: #333;
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .user-info p {
+            margin: 5px 0;
+            color: #555;
+            font-size: 14px;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .container {
+                box-shadow: none;
+            }
+            .btn, .header p {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 Workplace Access</h1>
+            <p>Barcode Generator System</p>
+        </div>
+
+        <div class="content">
+            <!-- Login Screen -->
+            <div id="login-screen">
+                <h2 style="margin-bottom: 20px; color: #333;">Login</h2>
+                <div id="login-error" class="error hidden"></div>
+                
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                </div>
+
+                <button class="btn btn-primary" onclick="login()">Login</button>
+                
+                <p style="text-align: center; margin-top: 20px; color: #666;">
+                    Don't have an account? 
+                    <a href="#" onclick="showSignup(); return false;" style="color: #667eea; font-weight: 600; text-decoration: none;">Sign Up</a>
+                </p>
+            </div>
+
+            <!-- Signup Screen -->
+            <div id="signup-screen" class="hidden">
+                <h2 style="margin-bottom: 20px; color: #333;">Sign Up</h2>
+                <div id="signup-error" class="error hidden"></div>
+                <div id="signup-success" class="success hidden"></div>
+                
+                <div class="form-group">
+                    <label for="signup-fullname">Full Name</label>
+                    <input type="text" id="signup-fullname" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signup-username">Username</label>
+                    <input type="text" id="signup-username" placeholder="Choose a username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" placeholder="Choose a password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signup-confirm-password">Confirm Password</label>
+                    <input type="password" id="signup-confirm-password" placeholder="Re-enter your password" required>
+                </div>
+
+                <button class="btn btn-primary" onclick="signup()">Sign Up</button>
+                
+                <p style="text-align: center; margin-top: 20px; color: #666;">
+                    Already have an account? 
+                    <a href="#" onclick="showLogin(); return false;" style="color: #667eea; font-weight: 600; text-decoration: none;">Login</a>
+                </p>
+            </div>
+
+            <!-- Barcode Generator Screen -->
+            <div id="generator-screen" class="hidden">
+                <div class="user-info">
+                    <p><strong>Welcome:</strong> <span id="user-name"></span></p>
+                    <p><strong>Employee ID:</strong> <span id="user-id"></span></p>
+                </div>
+
+                <div id="generator-message" class="hidden"></div>
+
+                <div class="form-group">
+                    <label for="action-type">Select Action</label>
+                    <select id="action-type">
+                        <option value="entry">Entry - Clock In</option>
+                        <option value="exit">Exit - Clock Out</option>
+                        <option value="break-start">Break - Start</option>
+                        <option value="break-end">Break - End</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary" onclick="generateBarcode()">Generate Barcode</button>
+
+                <div id="barcode-container" class="hidden">
+                    <svg id="barcode"></svg>
+                    <div class="barcode-info">
+                        <p><strong>Action:</strong> <span id="action-display"></span></p>
+                        <p><strong>Generated:</strong> <span id="timestamp"></span></p>
+                        <p><strong>Barcode ID:</strong> <span id="barcode-id"></span></p>
+                    </div>
+                    <button class="btn btn-primary" onclick="window.print()">Print Barcode</button>
+                </div>
+
+                <button class="btn btn-secondary" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize users from localStorage or use default users
+        let users = [];
+        
+        // Load users from localStorage on page load
+        function loadUsers() {
+            const storedUsers = localStorage.getItem('barcodeSystemUsers');
+            if (storedUsers) {
+                users = JSON.parse(storedUsers);
+            } else {
+                // Default demo users (optional - you can remove these)
+                users = [
+                    { username: 'admin', password: 'admin123', name: 'Administrator', employeeId: 'ADMIN001' }
+                ];
+                saveUsers();
+            }
+        }
+
+        // Save users to localStorage
+        function saveUsers() {
+            localStorage.setItem('barcodeSystemUsers', JSON.stringify(users));
+        }
+
+        // Generate unique employee ID
+        function generateEmployeeId() {
+            const timestamp = Date.now();
+            const random = Math.floor(Math.random() * 1000);
+            return `EMP${timestamp}${random}`.substring(0, 10);
+        }
+
+        let currentUser = null;
+
+        // Show signup screen
+        function showSignup() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('signup-screen').classList.remove('hidden');
+            clearSignupForm();
+        }
+
+        // Show login screen
+        function showLogin() {
+            document.getElementById('signup-screen').classList.add('hidden');
+            document.getElementById('login-screen').classList.remove('hidden');
+            clearLoginForm();
+        }
+
+        // Clear login form
+        function clearLoginForm() {
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('login-error').classList.add('hidden');
+        }
+
+        // Clear signup form
+        function clearSignupForm() {
+            document.getElementById('signup-fullname').value = '';
+            document.getElementById('signup-username').value = '';
+            document.getElementById('signup-password').value = '';
+            document.getElementById('signup-confirm-password').value = '';
+            document.getElementById('signup-error').classList.add('hidden');
+            document.getElementById('signup-success').classList.add('hidden');
+        }
+
+        // Signup function
+        function signup() {
+            const fullname = document.getElementById('signup-fullname').value.trim();
+            const username = document.getElementById('signup-username').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('signup-confirm-password').value;
+            const errorDiv = document.getElementById('signup-error');
+            const successDiv = document.getElementById('signup-success');
+
+            // Clear previous messages
+            errorDiv.classList.add('hidden');
+            successDiv.classList.add('hidden');
+
+            // Validate input
+            if (!fullname || !username || !password || !confirmPassword) {
+                showError('Please fill in all fields', 'signup-error');
+                return;
+            }
+
+            // Validate fullname
+            if (fullname.length < 3) {
+                showError('Full name must be at least 3 characters long', 'signup-error');
+                return;
+            }
+
+            // Validate username
+            if (username.length < 4) {
+                showError('Username must be at least 4 characters long', 'signup-error');
+                return;
+            }
+
+            // Check if username already exists
+            if (users.find(u => u.username === username)) {
+                showError('Username already exists. Please choose a different username.', 'signup-error');
+                return;
+            }
+
+            // Validate password
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters long', 'signup-error');
+                return;
+            }
+
+            // Check if passwords match
+            if (password !== confirmPassword) {
+                showError('Passwords do not match', 'signup-error');
+                return;
+            }
+
+            // Create new user
+            const newUser = {
+                username: username,
+                password: password,
+                name: fullname,
+                employeeId: generateEmployeeId()
+            };
+
+            // Add user to array and save
+            users.push(newUser);
+            saveUsers();
+
+            // Show success message
+            successDiv.textContent = `Account created successfully! Your Employee ID is: ${newUser.employeeId}`;
+            successDiv.classList.remove('hidden');
+
+            // Clear form
+            setTimeout(() => {
+                clearSignupForm();
+                showLogin();
+            }, 2000);
+        }
+
+        // Login function
+        function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('login-error');
+
+            // Clear previous errors
+            errorDiv.classList.add('hidden');
+
+            // Validate input
+            if (!username || !password) {
+                showError('Please enter both username and password', 'login-error');
+                return;
+            }
+
+            // Check credentials
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                currentUser = user;
+                showGeneratorScreen();
+            } else {
+                showError('Invalid username or password. Please try again.', 'login-error');
+            }
+        }
+
+        // Show generator screen
+        function showGeneratorScreen() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('signup-screen').classList.add('hidden');
+            document.getElementById('generator-screen').classList.remove('hidden');
+            document.getElementById('user-name').textContent = currentUser.name;
+            document.getElementById('user-id').textContent = currentUser.employeeId;
+        }
+
+        // Generate barcode
+        function generateBarcode() {
+            const actionType = document.getElementById('action-type').value;
+            const timestamp = new Date();
+            
+            // Generate unique barcode ID
+            const barcodeId = `${currentUser.employeeId}-${actionType.toUpperCase()}-${timestamp.getTime()}`;
+            
+            // Generate barcode
+            JsBarcode("#barcode", barcodeId, {
+                format: "CODE128",
+                width: 2,
+                height: 100,
+                displayValue: true,
+                fontSize: 14,
+                margin: 10
+            });
+
+            // Display barcode information
+            const actionNames = {
+                'entry': 'Entry - Clock In',
+                'exit': 'Exit - Clock Out',
+                'break-start': 'Break - Start',
+                'break-end': 'Break - End'
+            };
+
+            document.getElementById('action-display').textContent = actionNames[actionType];
+            document.getElementById('timestamp').textContent = timestamp.toLocaleString();
+            document.getElementById('barcode-id').textContent = barcodeId;
+            
+            // Show barcode container
+            document.getElementById('barcode-container').classList.remove('hidden');
+            
+            // Show success message
+            const messageDiv = document.getElementById('generator-message');
+            messageDiv.className = 'success';
+            messageDiv.textContent = 'Barcode generated successfully!';
+            messageDiv.classList.remove('hidden');
+            
+            // Hide success message after 3 seconds
+            setTimeout(() => {
+                messageDiv.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Logout function
+        function logout() {
+            currentUser = null;
+            document.getElementById('generator-screen').classList.add('hidden');
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('barcode-container').classList.add('hidden');
+            clearLoginForm();
+        }
+
+        // Show error message
+        function showError(message, elementId) {
+            const errorDiv = document.getElementById(elementId);
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+
+        // Allow Enter key to submit login
+        document.getElementById('password').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                login();
+            }
+        });
+
+        document.getElementById('username').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                login();
+            }
+        });
+
+        // Load users when page loads
+        window.addEventListener('DOMContentLoaded', function() {
+            loadUsers();
+        });
+    </script>
+</body>
+</html>
